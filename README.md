@@ -49,40 +49,45 @@ ALPACA_API_KEY=your_api_key_here
 ALPACA_SECRET_KEY=your_secret_key_here
 ```
 
-## Usage
+## Market Data Functions
 
-### Crypto Bar Fetching
+### 1. Crypto Assets Retrieval
 
-#### Real-Time Market Updates
-The bar fetching is optimized for the fast-moving crypto market, with a default 1-second interval to capture rapid price changes.
-
+#### Command Line Usage
 ```bash
-# Default (fetch bars for all tradable assets every second)
-python index.py
+# Default (prints raw assets)
+python index.py get_crypto_assets
 
-# Specify symbols and custom interval
-python index.py --symbols BTC/USD ETH/USD --interval 2
+# With tabular format
+python index.py get_crypto_assets --format table
 
 # Disable printing
-python index.py --print_bars False
+python index.py get_crypto_assets --print_assets False
 ```
 
-#### Fetch Bars from Command Line
+#### Python Usage
+```python
+from src.bot.market_data import get_crypto_assets
+
+# Get all tradable crypto assets
+assets = get_crypto_assets()
+
+# Get assets in table format
+assets_table = get_crypto_assets(format='table', print_assets=False)
+```
+
+### 2. Persistent Crypto Bar Fetching
+
+#### Command Line Usage
 ```bash
-# Fetch bars for all tradable assets (default: minute timeframe)
+# Default (fetch bars for all tradable assets every second)
 python index.py --bars
 
-# Specify symbols
-python index.py --bars --symbols BTC/USD ETH/USD
+# Specify symbols and custom interval
+python index.py --bars --symbols BTC/USD ETH/USD --interval 2
 
-# Change timeframe
-python index.py --bars --timeframe hour
-
-# Specify date range
-python index.py --bars --start 2023-01-01 --end 2023-12-31
-
-# Customize interval and printing
-python index.py --bars --symbols BTC/USD --interval 2 --print_bars False
+# Disable printing
+python index.py --bars --print_bars False
 ```
 
 #### Python Usage
@@ -111,23 +116,9 @@ except KeyboardInterrupt:
     stop_event.set()
 ```
 
-### Other Crypto Asset Functions
+### 3. WebSocket Streaming
 
-#### Get Crypto Assets
-```bash
-# Default (prints raw assets)
-python index.py get_crypto_assets
-
-# With tabular format
-python index.py get_crypto_assets --format table
-
-# Disable printing
-python index.py get_crypto_assets --print_assets False
-```
-
-### WebSocket Streaming
-
-#### Real-Time Trade Updates
+#### Python Usage
 ```python
 from src.bot.market_data import CryptoWebSocketClient
 
@@ -151,6 +142,31 @@ except KeyboardInterrupt:
     ws_client.stop()
 ```
 
+### 4. Crypto Data Manager
+
+```python
+from src.bot.market_data import CryptoDataManager
+
+# Initialize data manager with custom refresh interval
+data_manager = CryptoDataManager(refresh_interval=30)
+
+# Optional callback for periodic updates
+def on_data_update(bars):
+    print("Updated Bars:", bars)
+
+# Start periodic data refresh
+data_manager.start_periodic_refresh(
+    symbols=['BTC/USD', 'ETH/USD'], 
+    callback=on_data_update
+)
+
+# Get latest cached bars
+latest_bars = data_manager.get_latest_bars()
+
+# Stop periodic refresh when done
+data_manager.stop_periodic_refresh()
+```
+
 ## Advanced Features
 - Ultra-fast 1-second crypto market data updates
 - Persistent real-time bar data streaming
@@ -159,6 +175,7 @@ except KeyboardInterrupt:
 - Automatic symbol discovery
 - Callback-based bar processing
 - Background data fetching
+- WebSocket trade streaming
 
 ## Development Roadmap
 - [ ] Implement advanced trading strategies

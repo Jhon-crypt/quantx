@@ -17,6 +17,72 @@ import logging
 from datetime import datetime, timedelta
 import pandas as pd
 
+def get_crypto_assets(
+    api_key: str = None, 
+    secret_key: str = None, 
+    print_assets: bool = True, 
+    format: str = 'raw'
+) -> List[Dict]:
+    """
+    Fetch all crypto assets from Alpaca Trading API.
+    
+    Args:
+        api_key (str, optional): Alpaca API key. Defaults to environment variable.
+        secret_key (str, optional): Alpaca secret key. Defaults to environment variable.
+        print_assets (bool, optional): Whether to print assets. Defaults to True.
+        format (str, optional): Output format. Options: 'raw', 'table'. Defaults to 'raw'.
+    
+    Returns:
+        List of crypto asset dictionaries
+    """
+    # Use environment variables if keys are not provided
+    api_key = api_key or os.getenv('ALPACA_API_KEY')
+    secret_key = secret_key or os.getenv('ALPACA_SECRET_KEY')
+    
+    if not api_key or not secret_key:
+        raise ValueError("Alpaca API key and secret key must be provided")
+    
+    # Initialize Trading Client
+    trading_client = TradingClient(api_key, secret_key)
+    
+    # Search for crypto assets
+    search_params = GetAssetsRequest(asset_class=AssetClass.CRYPTO)
+    
+    # Get all crypto assets
+    assets = trading_client.get_all_assets(search_params)
+    
+    # Filter tradable crypto assets
+    tradable_assets = [asset for asset in assets if asset.tradable]
+    
+    # Format output based on specified format
+    if format == 'table':
+        # Prepare data for tabulation
+        asset_data = [
+            [
+                asset.symbol, 
+                asset.name, 
+                asset.status, 
+                asset.tradable, 
+                asset.marginable, 
+                asset.shortable
+            ] 
+            for asset in tradable_assets
+        ]
+        
+        # Render table
+        headers = ['Symbol', 'Name', 'Status', 'Tradable', 'Marginable', 'Shortable']
+        formatted_assets = tabulate(asset_data, headers=headers, tablefmt='grid')
+        
+        # Print assets if specified
+        if print_assets:
+            print(formatted_assets)
+    else:
+        # Print assets if specified
+        if print_assets:
+            print(tradable_assets)
+    
+    return tradable_assets
+
 class CryptoDataManager:
     def __init__(self, refresh_interval: int = 60):
         """
@@ -287,72 +353,6 @@ class CryptoWebSocketClient:
         self.is_running = False
         print("WebSocket streaming stopped")
 
-def get_crypto_assets(
-    api_key: str = None, 
-    secret_key: str = None, 
-    print_assets: bool = True, 
-    format: str = 'raw'
-) -> List[Dict]:
-    """
-    Fetch all crypto assets from Alpaca Trading API.
-    
-    Args:
-        api_key (str, optional): Alpaca API key. Defaults to environment variable.
-        secret_key (str, optional): Alpaca secret key. Defaults to environment variable.
-        print_assets (bool, optional): Whether to print assets. Defaults to True.
-        format (str, optional): Output format. Options: 'raw', 'table'. Defaults to 'raw'.
-    
-    Returns:
-        List of crypto asset dictionaries
-    """
-    # Use environment variables if keys are not provided
-    api_key = api_key or os.getenv('ALPACA_API_KEY')
-    secret_key = secret_key or os.getenv('ALPACA_SECRET_KEY')
-    
-    if not api_key or not secret_key:
-        raise ValueError("Alpaca API key and secret key must be provided")
-    
-    # Initialize Trading Client
-    trading_client = TradingClient(api_key, secret_key)
-    
-    # Search for crypto assets
-    search_params = GetAssetsRequest(asset_class=AssetClass.CRYPTO)
-    
-    # Get all crypto assets
-    assets = trading_client.get_all_assets(search_params)
-    
-    # Filter tradable crypto assets
-    tradable_assets = [asset for asset in assets if asset.tradable]
-    
-    # Format output based on specified format
-    if format == 'table':
-        # Prepare data for tabulation
-        asset_data = [
-            [
-                asset.symbol, 
-                asset.name, 
-                asset.status, 
-                asset.tradable, 
-                asset.marginable, 
-                asset.shortable
-            ] 
-            for asset in tradable_assets
-        ]
-        
-        # Render table
-        headers = ['Symbol', 'Name', 'Status', 'Tradable', 'Marginable', 'Shortable']
-        formatted_assets = tabulate(asset_data, headers=headers, tablefmt='grid')
-        
-        # Print assets if specified
-        if print_assets:
-            print(formatted_assets)
-    else:
-        # Print assets if specified
-        if print_assets:
-            print(tradable_assets)
-    
-    return tradable_assets
-
 def get_persistent_crypto_bars(
     symbols: List[str] = None, 
     interval: int = 1,  # Changed to 1 second for faster updates
@@ -372,8 +372,7 @@ def get_persistent_crypto_bars(
     """
     # If no symbols provided, get tradable crypto assets
     if symbols is None:
-        assets = get_crypto_assets(print_assets=False)
-        symbols = [asset.symbol for asset in assets]
+        symbols = [asset.symbol for asset in get_crypto_assets(print_assets=False)]
     
     # Stop event to control the thread
     stop_event = threading.Event()
