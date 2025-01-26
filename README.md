@@ -34,7 +34,7 @@ cd quantx
 ### 2. Create Virtual Environment
 ```bash
 python3 -m venv quantenv
-source quantenv/bin/activate  # On Windows use: quantenv\Scriptsctivate
+source quantenv/bin/activate  # On Windows use: quantenv\Scripts\activate
 ```
 
 ### 3. Install Dependencies
@@ -51,33 +51,38 @@ ALPACA_SECRET_KEY=your_secret_key_here
 
 ## Usage
 
-### Available Functions
-- `get_crypto_assets`: Retrieve crypto assets from Alpaca
-- `render_crypto_assets`: Display crypto assets in a tabular format
-
-### Command Line Examples
-
-#### List Available Functions
-```bash
-python index.py
-```
+### Crypto Assets Function
 
 #### Get Crypto Assets
 ```bash
-# Using .env credentials
+# Default (prints raw assets)
 python index.py get_crypto_assets
+
+# With tabular format
+python index.py get_crypto_assets --format table
+
+# Disable printing
+python index.py get_crypto_assets --print_assets False
 
 # With custom API keys
 python index.py get_crypto_assets --api_key YOUR_API_KEY --secret_key YOUR_SECRET_KEY
 ```
 
-#### Render Crypto Assets
-```bash
-# Default rendering
-python index.py render_crypto_assets
+#### Function Parameters
+- `--api_key`: Custom Alpaca API key
+- `--secret_key`: Custom Alpaca secret key
+- `--print_assets`: Whether to print assets (default: True)
+- `--format`: Output format ('raw' or 'table', default: 'raw')
 
-# Disable rendering
-python index.py render_crypto_assets --render False
+### Python Usage
+```python
+from src.bot.crypto_assets import get_crypto_assets
+
+# Get raw assets
+assets = get_crypto_assets(format='raw')
+
+# Get tabular format
+assets_table = get_crypto_assets(format='table')
 ```
 
 ## Development Roadmap
