@@ -1,11 +1,16 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Union
 from alpaca.trading.client import TradingClient # type: ignore
 from alpaca.trading.requests import GetAssetsRequest# type: ignore
 from alpaca.trading.enums import AssetClass # type: ignore
 from tabulate import tabulate # type: ignore
 
-def get_crypto_assets(api_key: str = None, secret_key: str = None, print_assets: bool = True) -> List[Dict]:
+def get_crypto_assets(
+    api_key: str = None, 
+    secret_key: str = None, 
+    print_assets: bool = True, 
+    format: str = 'raw'
+) -> Union[List[Dict], str]:
     """
     Fetch all crypto assets from Alpaca Trading API.
     
@@ -13,9 +18,10 @@ def get_crypto_assets(api_key: str = None, secret_key: str = None, print_assets:
         api_key (str, optional): Alpaca API key. Defaults to environment variable.
         secret_key (str, optional): Alpaca secret key. Defaults to environment variable.
         print_assets (bool, optional): Whether to print assets. Defaults to True.
+        format (str, optional): Output format. Options: 'raw', 'table'. Defaults to 'raw'.
     
     Returns:
-        List of crypto asset dictionaries
+        List of crypto asset dictionaries or formatted table string
     """
     # Use environment variables if keys are not provided
     api_key = api_key or os.getenv('ALPACA_API_KEY')
@@ -33,8 +39,8 @@ def get_crypto_assets(api_key: str = None, secret_key: str = None, print_assets:
     # Get all crypto assets
     assets = trading_client.get_all_assets(search_params)
     
-    # Print assets if specified
-    if print_assets:
+    # Format output based on specified format
+    if format == 'table':
         # Prepare data for tabulation
         asset_data = [
             [
@@ -50,9 +56,16 @@ def get_crypto_assets(api_key: str = None, secret_key: str = None, print_assets:
         
         # Render table
         headers = ['Symbol', 'Name', 'Status', 'Tradable', 'Marginable', 'Shortable']
-        print(tabulate(asset_data, headers=headers, tablefmt='grid'))
+        formatted_assets = tabulate(asset_data, headers=headers, tablefmt='grid')
+    else:
+        # Raw format
+        formatted_assets = assets
     
-    return assets
+    # Print assets if specified
+    if print_assets:
+        print(formatted_assets)
+    
+    return formatted_assets
 
 def main():
     """
