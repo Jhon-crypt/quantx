@@ -46,6 +46,7 @@ def main(function_name: str = None, **kwargs):
         if function_name == 'get_crypto_assets':
             kwargs.pop('render', None)
             kwargs['print_assets'] = kwargs.get('print_assets', True)
+            kwargs['format'] = kwargs.get('format', 'raw')
         
         # Call the function with provided kwargs
         result = func(**kwargs)
@@ -80,6 +81,12 @@ def parse_arguments():
                         help='Print crypto assets', 
                         default=True)
     
+    # Format flag for crypto assets
+    parser.add_argument('--format', type=str, 
+                        help='Output format (raw or table)', 
+                        default='raw', 
+                        choices=['raw', 'table'])
+    
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -91,7 +98,8 @@ if __name__ == '__main__':
         'function_name': args.function,
         'api_key': args.api_key,
         'secret_key': args.secret_key,
-        'print_assets': args.print_assets
+        'print_assets': args.print_assets,
+        'format': args.format
     }
     
     # Remove None values
