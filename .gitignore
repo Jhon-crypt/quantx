@@ -1,1 +1,18 @@
+# Environment files
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
 quantenv/
+
+# IDE files
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
