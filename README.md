@@ -9,7 +9,7 @@ quantx/
 │
 ├── src/
 │   └── bot/
-│       └── crypto_assets.py     # Core crypto asset functions
+│       └── market_data.py     # Core market data functions
 │
 ├── tests/                       # Future test directory
 ├── data/                        # Data storage
@@ -87,7 +87,7 @@ python index.py --bars --symbols BTC/USD --interval 2 --print_bars False
 
 #### Python Usage
 ```python
-from src.bot.crypto_assets import get_persistent_crypto_bars
+from src.bot.market_data import get_persistent_crypto_bars
 import time
 
 # Optional callback to process bar updates
@@ -129,7 +129,7 @@ python index.py get_crypto_assets --print_assets False
 
 #### Real-Time Trade Updates
 ```python
-from src.bot.crypto_assets import CryptoWebSocketClient
+from src.bot.market_data import CryptoWebSocketClient
 
 # Create WebSocket client
 ws_client = CryptoWebSocketClient()

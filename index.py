@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 # Import the functions you want to make available
-from src.bot.crypto_assets import (
+from src.bot.market_data import (
     get_crypto_assets, 
     get_persistent_crypto_bars
 )

@@ -3,14 +3,14 @@ import requests
 import time
 import threading
 import json
-import websocket
+import websocket # type: ignore
 from typing import List, Dict, Union, Callable
 from alpaca.trading.client import TradingClient # type: ignore
 from alpaca.trading.requests import GetAssetsRequest# type: ignore
 from alpaca.trading.enums import AssetClass # type: ignore
-from alpaca.data.historical import CryptoHistoricalDataClient
-from alpaca.data.requests import CryptoBarsRequest
-from alpaca.data.timeframe import TimeFrame
+from alpaca.data.historical import CryptoHistoricalDataClient # type: ignore
+from alpaca.data.requests import CryptoBarsRequest # type: ignore
+from alpaca.data.timeframe import TimeFrame # type: ignore
 from tabulate import tabulate # type: ignore
 import asyncio
 import logging
@@ -42,9 +42,8 @@ class CryptoDataManager:
         """
         # If no symbols provided, get tradable crypto assets
         if symbols is None:
-            assets = get_crypto_assets(print_assets=False)
-            # Convert asset objects to symbol strings
-            symbols = [asset.symbol for asset in assets]
+            # Use the existing get_crypto_assets function
+            symbols = [asset.symbol for asset in get_crypto_assets(print_assets=False)]
         
         # Encode symbols for URL
         symbols_param = ','.join(symbols)
@@ -160,8 +159,8 @@ class CryptoWebSocketClient:
         
         # Get symbols if not provided
         if symbols is None:
-            assets = get_crypto_assets(print_assets=False)
-            symbols = [asset.symbol for asset in assets]
+            # Use the existing get_crypto_assets function
+            symbols = [asset.symbol for asset in get_crypto_assets(print_assets=False)]
         
         self.symbols = symbols
         self.websocket = None
@@ -371,9 +370,6 @@ def get_persistent_crypto_bars(
         on_update (Callable, optional): Callback function for each bar update.
         print_bars (bool, optional): Whether to print bars. Defaults to True.
     """
-    # Import here to avoid circular import
-    from .crypto_assets import get_crypto_assets
-    
     # If no symbols provided, get tradable crypto assets
     if symbols is None:
         assets = get_crypto_assets(print_assets=False)
