@@ -20,3 +20,6 @@ websockets==14.2
 alpaca-trade-api
 tabulate
 python-dotenv
+
+# WebSocket support
+websocket-client

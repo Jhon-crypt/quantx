@@ -1,9 +1,14 @@
 import os
 import argparse
+import time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
-# Import the function you want to make available
-from src.bot.crypto_assets import get_crypto_assets
+# Import the functions you want to make available
+from src.bot.crypto_assets import (
+    get_crypto_assets, 
+    get_persistent_crypto_bars
+)
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +25,7 @@ def main(function_name: str = None, **kwargs):
     # Dictionary mapping function names to actual functions
     available_functions = {
         'get_crypto_assets': get_crypto_assets,
+        'get_persistent_crypto_bars': get_persistent_crypto_bars,
         # Add more functions here as you develop them
     }
     
@@ -48,8 +54,23 @@ def main(function_name: str = None, **kwargs):
             kwargs['print_assets'] = kwargs.get('print_assets', True)
             kwargs['format'] = kwargs.get('format', 'raw')
         
+        if function_name == 'get_persistent_crypto_bars':
+            # Remove unsupported arguments
+            kwargs.pop('render', None)
+            kwargs.pop('print_assets', None)
+            kwargs.pop('format', None)
+        
         # Call the function with provided kwargs
         result = func(**kwargs)
+        
+        # For persistent bars, keep the main thread running
+        if function_name == 'get_persistent_crypto_bars':
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                result.set()  # Stop the bar fetching
+        
         return result
     except Exception as e:
         print(f"Error executing {function_name}: {e}")
@@ -68,42 +89,67 @@ def parse_arguments():
     parser.add_argument('function', nargs='?', 
                         help='Function to execute')
     
-    # Alpaca API credentials (optional)
-    parser.add_argument('--api_key', type=str, 
-                        help='Alpaca API Key', 
-                        default=os.getenv('ALPACA_API_KEY'))
-    parser.add_argument('--secret_key', type=str, 
-                        help='Alpaca Secret Key', 
-                        default=os.getenv('ALPACA_SECRET_KEY'))
-    
-    # Print flag for crypto assets
+    # Crypto Assets function arguments
     parser.add_argument('--print_assets', type=bool, 
                         help='Print crypto assets', 
                         default=True)
-    
-    # Format flag for crypto assets
     parser.add_argument('--format', type=str, 
                         help='Output format (raw or table)', 
                         default='raw', 
                         choices=['raw', 'table'])
     
+    # Crypto Bars specific arguments
+    parser.add_argument('--bars', action='store_true',
+                        help='Fetch crypto bars')
+    parser.add_argument('--symbols', type=str, nargs='+',
+                        help='Crypto symbols to retrieve bars for (e.g., BTC/USD ETH/USD)')
+    parser.add_argument('--timeframe', type=str, 
+                        help='Timeframe for bars', 
+                        choices=['minute', 'hour', 'day'], 
+                        default='minute')
+    parser.add_argument('--start', type=str, 
+                        help='Start date for bars (YYYY-MM-DD)')
+    parser.add_argument('--end', type=str, 
+                        help='End date for bars (YYYY-MM-DD)')
+    
+    # Persistent Bars arguments
+    parser.add_argument('--interval', type=int, 
+                        help='Interval between bar fetches (seconds)', 
+                        default=5)
+    parser.add_argument('--print_bars', type=bool, 
+                        help='Print crypto bars', 
+                        default=True)
+    
     return parser.parse_args()
 
-if __name__ == '__main__':
+def main_cli():
+    """
+    Command-line interface entry point
+    """
     # Parse command-line arguments
     args = parse_arguments()
     
     # Prepare kwargs for the main function
     kwargs = {
         'function_name': args.function,
-        'api_key': args.api_key,
-        'secret_key': args.secret_key,
         'print_assets': args.print_assets,
-        'format': args.format
+        'format': args.format,
     }
+    
+    # Handle bar-specific arguments
+    if args.bars or args.function == 'get_persistent_crypto_bars':
+        kwargs.update({
+            'function_name': 'get_persistent_crypto_bars',
+            'symbols': args.symbols,
+            'interval': args.interval,
+            'print_bars': args.print_bars
+        })
     
     # Remove None values
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
     
     # Call main with parsed arguments
     main(**kwargs)
+
+if __name__ == '__main__':
+    main_cli()

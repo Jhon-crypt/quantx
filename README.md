@@ -51,7 +51,65 @@ ALPACA_SECRET_KEY=your_secret_key_here
 
 ## Usage
 
-### Crypto Assets Function
+### Crypto Bar Fetching
+
+#### Fetch Bars from Command Line
+```bash
+# Fetch bars for all tradable assets (default: minute timeframe)
+python index.py --bars
+
+# Specify symbols
+python index.py --bars --symbols BTC/USD ETH/USD
+
+# Change timeframe
+python index.py --bars --timeframe hour
+
+# Specify date range
+python index.py --bars --start 2023-01-01 --end 2023-12-31
+
+# Customize interval and printing
+python index.py --bars --symbols BTC/USD --interval 10 --print_bars False
+```
+
+#### Persistent Bar Fetching
+```bash
+# Default (fetch bars for all tradable assets every 5 seconds)
+python index.py
+
+# Specify symbols and interval
+python index.py --symbols BTC/USD ETH/USD --interval 10
+
+# Disable printing
+python index.py --print_bars False
+```
+
+#### Python Usage
+```python
+from src.bot.crypto_assets import get_persistent_crypto_bars
+import time
+
+# Optional callback to process bar updates
+def process_bars(bars):
+    for symbol, bar in bars.items():
+        print(f"{symbol} - Close: {bar.get('c', 'N/A')}")
+
+# Start persistent bar fetching
+stop_event = get_persistent_crypto_bars(
+    symbols=['BTC/USD', 'ETH/USD'],  # Optional: specify symbols
+    interval=10,  # Fetch every 10 seconds
+    on_update=process_bars
+)
+
+# Keep main thread running
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    # Stop bar fetching on interrupt
+    stop_event.set()
+```
+
+### Other Crypto Asset Functions
 
 #### Get Crypto Assets
 ```bash
@@ -63,33 +121,47 @@ python index.py get_crypto_assets --format table
 
 # Disable printing
 python index.py get_crypto_assets --print_assets False
-
-# With custom API keys
-python index.py get_crypto_assets --api_key YOUR_API_KEY --secret_key YOUR_SECRET_KEY
 ```
 
-#### Function Parameters
-- `--api_key`: Custom Alpaca API key
-- `--secret_key`: Custom Alpaca secret key
-- `--print_assets`: Whether to print assets (default: True)
-- `--format`: Output format ('raw' or 'table', default: 'raw')
+### WebSocket Streaming
 
-### Python Usage
+#### Real-Time Trade Updates
 ```python
-from src.bot.crypto_assets import get_crypto_assets
+from src.bot.crypto_assets import CryptoWebSocketClient
 
-# Get raw assets
-assets = get_crypto_assets(format='raw')
+# Create WebSocket client
+ws_client = CryptoWebSocketClient()
 
-# Get tabular format
-assets_table = get_crypto_assets(format='table')
+# Callback to process incoming trade data
+def process_trade(trade_data):
+    print("Trade Update:", trade_data)
+    # Add your trading logic here
+
+# Start WebSocket streaming with callback
+ws_client.start(on_message_callback=process_trade)
+
+# Keep main thread running
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    # Stop WebSocket on interrupt
+    ws_client.stop()
 ```
+
+## Advanced Features
+- Persistent real-time bar data streaming
+- Flexible bar fetching with custom parameters
+- Configurable fetch intervals
+- Automatic symbol discovery
+- Callback-based bar processing
+- Background data fetching
 
 ## Development Roadmap
-- [ ] Implement trading strategies
-- [ ] Add more crypto asset management functions
+- [ ] Implement advanced trading strategies
+- [ ] Add more crypto data analysis tools
 - [ ] Create comprehensive test suite
-- [ ] Implement logging and error tracking
+- [ ] Implement advanced logging and error tracking
 
 ## Contributing
 1. Fork the repository
