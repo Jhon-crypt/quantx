@@ -5,13 +5,14 @@ from alpaca.trading.requests import GetAssetsRequest# type: ignore
 from alpaca.trading.enums import AssetClass # type: ignore
 from tabulate import tabulate # type: ignore
 
-def get_crypto_assets(api_key: str = None, secret_key: str = None) -> List[Dict]:
+def get_crypto_assets(api_key: str = None, secret_key: str = None, print_assets: bool = True) -> List[Dict]:
     """
     Fetch all crypto assets from Alpaca Trading API.
     
     Args:
         api_key (str, optional): Alpaca API key. Defaults to environment variable.
         secret_key (str, optional): Alpaca secret key. Defaults to environment variable.
+        print_assets (bool, optional): Whether to print assets. Defaults to True.
     
     Returns:
         List of crypto asset dictionaries
@@ -32,41 +33,33 @@ def get_crypto_assets(api_key: str = None, secret_key: str = None) -> List[Dict]
     # Get all crypto assets
     assets = trading_client.get_all_assets(search_params)
     
+    # Print assets if specified
+    if print_assets:
+        # Prepare data for tabulation
+        asset_data = [
+            [
+                asset.symbol, 
+                asset.name, 
+                asset.status, 
+                asset.tradable, 
+                asset.marginable, 
+                asset.shortable
+            ] 
+            for asset in assets
+        ]
+        
+        # Render table
+        headers = ['Symbol', 'Name', 'Status', 'Tradable', 'Marginable', 'Shortable']
+        print(tabulate(asset_data, headers=headers, tablefmt='grid'))
+    
     return assets
-
-def render_crypto_assets(assets: List[Dict] = None):
-    """
-    Render crypto assets in a tabular format.
-    
-    Args:
-        assets (List[Dict], optional): List of crypto assets. If None, fetches assets.
-    """
-    if assets is None:
-        assets = get_crypto_assets()
-    
-    # Prepare data for tabulation
-    asset_data = [
-        [
-            asset.symbol, 
-            asset.name, 
-            asset.status, 
-            asset.tradable, 
-            asset.marginable, 
-            asset.shortable
-        ] 
-        for asset in assets
-    ]
-    
-    # Render table
-    headers = ['Symbol', 'Name', 'Status', 'Tradable', 'Marginable', 'Shortable']
-    print(tabulate(asset_data, headers=headers, tablefmt='grid'))
 
 def main():
     """
-    Main function to demonstrate crypto asset retrieval and rendering
+    Main function to demonstrate crypto asset retrieval
     """
     try:
-        render_crypto_assets()
+        get_crypto_assets()
     except Exception as e:
         print(f"Error retrieving crypto assets: {e}")
 

@@ -2,8 +2,8 @@ import os
 import argparse
 from dotenv import load_dotenv
 
-# Import all functions you want to make available
-from src.bot.crypto_assets import get_crypto_assets, render_crypto_assets
+# Import the function you want to make available
+from src.bot.crypto_assets import get_crypto_assets
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +20,6 @@ def main(function_name: str = None, **kwargs):
     # Dictionary mapping function names to actual functions
     available_functions = {
         'get_crypto_assets': get_crypto_assets,
-        'render_crypto_assets': render_crypto_assets,
         # Add more functions here as you develop them
     }
     
@@ -43,6 +42,11 @@ def main(function_name: str = None, **kwargs):
     func = available_functions[function_name]
     
     try:
+        # Remove unsupported arguments for specific functions
+        if function_name == 'get_crypto_assets':
+            kwargs.pop('render', None)
+            kwargs['print_assets'] = kwargs.get('print_assets', True)
+        
         # Call the function with provided kwargs
         result = func(**kwargs)
         return result
@@ -71,9 +75,9 @@ def parse_arguments():
                         help='Alpaca Secret Key', 
                         default=os.getenv('ALPACA_SECRET_KEY'))
     
-    # Render flag for crypto assets
-    parser.add_argument('--render', type=bool, 
-                        help='Render crypto assets', 
+    # Print flag for crypto assets
+    parser.add_argument('--print_assets', type=bool, 
+                        help='Print crypto assets', 
                         default=True)
     
     return parser.parse_args()
@@ -87,7 +91,7 @@ if __name__ == '__main__':
         'function_name': args.function,
         'api_key': args.api_key,
         'secret_key': args.secret_key,
-        'render': args.render
+        'print_assets': args.print_assets
     }
     
     # Remove None values
