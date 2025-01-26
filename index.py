@@ -62,6 +62,13 @@ def main(function_name: str = None, **kwargs):
             kwargs.pop('print_assets', None)
             kwargs.pop('format', None)
         
+        if function_name == 'get_persistent_crypto_orderbooks':
+            # Remove unsupported arguments
+            kwargs.pop('render', None)
+            kwargs.pop('print_assets', None)
+            kwargs.pop('format', None)
+            kwargs['print_orderbooks'] = kwargs.get('print_orderbooks', True)
+        
         # Call the function with provided kwargs
         result = func(**kwargs)
         
@@ -72,6 +79,14 @@ def main(function_name: str = None, **kwargs):
                     time.sleep(1)
             except KeyboardInterrupt:
                 result.set()  # Stop the bar fetching
+        
+        # For persistent orderbooks, keep the main thread running
+        if function_name == 'get_persistent_crypto_orderbooks':
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                result.set()  # Stop the orderbook fetching
         
         return result
     except Exception as e:
