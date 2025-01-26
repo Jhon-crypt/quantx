@@ -53,6 +53,20 @@ ALPACA_SECRET_KEY=your_secret_key_here
 
 ### Crypto Bar Fetching
 
+#### Real-Time Market Updates
+The bar fetching is optimized for the fast-moving crypto market, with a default 1-second interval to capture rapid price changes.
+
+```bash
+# Default (fetch bars for all tradable assets every second)
+python index.py
+
+# Specify symbols and custom interval
+python index.py --symbols BTC/USD ETH/USD --interval 2
+
+# Disable printing
+python index.py --print_bars False
+```
+
 #### Fetch Bars from Command Line
 ```bash
 # Fetch bars for all tradable assets (default: minute timeframe)
@@ -68,19 +82,7 @@ python index.py --bars --timeframe hour
 python index.py --bars --start 2023-01-01 --end 2023-12-31
 
 # Customize interval and printing
-python index.py --bars --symbols BTC/USD --interval 10 --print_bars False
-```
-
-#### Persistent Bar Fetching
-```bash
-# Default (fetch bars for all tradable assets every 5 seconds)
-python index.py
-
-# Specify symbols and interval
-python index.py --symbols BTC/USD ETH/USD --interval 10
-
-# Disable printing
-python index.py --print_bars False
+python index.py --bars --symbols BTC/USD --interval 2 --print_bars False
 ```
 
 #### Python Usage
@@ -96,7 +98,7 @@ def process_bars(bars):
 # Start persistent bar fetching
 stop_event = get_persistent_crypto_bars(
     symbols=['BTC/USD', 'ETH/USD'],  # Optional: specify symbols
-    interval=10,  # Fetch every 10 seconds
+    interval=1,  # Fetch every second (default)
     on_update=process_bars
 )
 
@@ -150,6 +152,7 @@ except KeyboardInterrupt:
 ```
 
 ## Advanced Features
+- Ultra-fast 1-second crypto market data updates
 - Persistent real-time bar data streaming
 - Flexible bar fetching with custom parameters
 - Configurable fetch intervals

@@ -356,7 +356,7 @@ def get_crypto_assets(
 
 def get_persistent_crypto_bars(
     symbols: List[str] = None, 
-    interval: int = 5,  # seconds between fetches
+    interval: int = 1,  # Changed to 1 second for faster updates
     on_update: Callable[[Dict], None] = None,
     print_bars: bool = True
 ):
@@ -366,7 +366,8 @@ def get_persistent_crypto_bars(
     Args:
         symbols (List[str], optional): List of crypto symbols. 
             Defaults to all tradable symbols from get_crypto_assets.
-        interval (int, optional): Interval between bar fetches in seconds. Defaults to 5.
+        interval (int, optional): Interval between bar fetches in seconds. 
+            Defaults to 1 second for rapid crypto market updates.
         on_update (Callable, optional): Callback function for each bar update.
         print_bars (bool, optional): Whether to print bars. Defaults to True.
     """

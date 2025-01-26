@@ -115,7 +115,7 @@ def parse_arguments():
     # Persistent Bars arguments
     parser.add_argument('--interval', type=int, 
                         help='Interval between bar fetches (seconds)', 
-                        default=5)
+                        default=1)
     parser.add_argument('--print_bars', type=bool, 
                         help='Print crypto bars', 
                         default=True)
