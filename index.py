@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 # Import the functions you want to make available
 from src.bot.market_data import (
     get_crypto_assets, 
-    get_persistent_crypto_bars
+    get_persistent_crypto_bars,
+    get_persistent_crypto_orderbooks
 )
 
 # Load environment variables
@@ -26,6 +27,7 @@ def main(function_name: str = None, **kwargs):
     available_functions = {
         'get_crypto_assets': get_crypto_assets,
         'get_persistent_crypto_bars': get_persistent_crypto_bars,
+        'get_persistent_crypto_orderbooks': get_persistent_crypto_orderbooks,
         # Add more functions here as you develop them
     }
     
@@ -120,6 +122,18 @@ def parse_arguments():
                         help='Print crypto bars', 
                         default=True)
     
+    # Orderbooks specific arguments
+    parser.add_argument('--orderbooks', action='store_true',
+                        help='Fetch crypto order books')
+    parser.add_argument('--orderbook_symbols', type=str, nargs='+',
+                        help='Crypto symbols to retrieve order books for (e.g., BTC/USD ETH/USD)')
+    parser.add_argument('--orderbook_interval', type=int, 
+                        help='Interval between order book fetches (seconds)', 
+                        default=1)
+    parser.add_argument('--print_orderbooks', type=bool, 
+                        help='Print crypto order books', 
+                        default=True)
+    
     return parser.parse_args()
 
 def main_cli():
@@ -143,6 +157,15 @@ def main_cli():
             'symbols': args.symbols,
             'interval': args.interval,
             'print_bars': args.print_bars
+        })
+    
+    # Handle orderbooks-specific arguments
+    if args.orderbooks or args.function == 'get_persistent_crypto_orderbooks':
+        kwargs.update({
+            'function_name': 'get_persistent_crypto_orderbooks',
+            'symbols': args.orderbook_symbols,
+            'interval': args.orderbook_interval,
+            'print_orderbooks': args.print_orderbooks
         })
     
     # Remove None values

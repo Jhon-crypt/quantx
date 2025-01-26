@@ -440,6 +440,93 @@ def get_persistent_crypto_bars(
     # Return the stop event to allow external control
     return stop_event
 
+def get_persistent_crypto_orderbooks(
+    symbols: List[str] = None, 
+    interval: int = 1,  # Changed to 1 second for faster updates
+    on_update: Callable[[Dict], None] = None,
+    print_orderbooks: bool = True
+):
+    """
+    Continuously fetch real-time order books for specified crypto symbols.
+    
+    Args:
+        symbols (List[str], optional): List of crypto symbols. 
+            Defaults to all tradable symbols from get_crypto_assets.
+        interval (int, optional): Interval between order book fetches in seconds. 
+            Defaults to 1 second for rapid crypto market updates.
+        on_update (Callable, optional): Callback function for each order book update.
+        print_orderbooks (bool, optional): Whether to print order books. Defaults to True.
+    """
+    # If no symbols provided, get tradable crypto assets
+    if symbols is None:
+        symbols = [asset.symbol for asset in get_crypto_assets(print_assets=False)]
+    
+    # Stop event to control the thread
+    stop_event = threading.Event()
+    
+    def fetch_orderbooks():
+        """
+        Internal function to fetch order books continuously
+        """
+        while not stop_event.is_set():
+            try:
+                # Encode symbols for URL
+                symbols_param = ','.join(symbols)
+                encoded_symbols = symbols_param.replace('/', '%2F')
+                
+                # Construct URL
+                url = f"https://data.alpaca.markets/v1beta3/crypto/us/latest/orderbooks?symbols={encoded_symbols}"
+                
+                # Get API key from environment
+                api_key = os.getenv('ALPACA_API_KEY')
+                secret_key = os.getenv('ALPACA_SECRET_KEY')
+                
+                if not api_key or not secret_key:
+                    raise ValueError("Alpaca API key and secret key must be provided")
+                
+                # Set headers
+                headers = {
+                    "accept": "application/json",
+                    "APCA-API-KEY-ID": api_key,
+                    "APCA-API-SECRET-KEY": secret_key
+                }
+                
+                # Make the request
+                response = requests.get(url, headers=headers)
+                
+                # Check for successful response
+                response.raise_for_status()
+                
+                # Parse JSON response
+                orderbooks_data = response.json()
+                
+                # Print order books if specified
+                if print_orderbooks:
+                    print(f"Order Book Update at {time.strftime('%Y-%m-%d %H:%M:%S')}:")
+                    print(json.dumps(orderbooks_data, indent=2))
+                
+                # Call user-defined callback if provided
+                if on_update:
+                    on_update(orderbooks_data)
+                
+                # Wait for next interval
+                stop_event.wait(interval)
+            
+            except requests.RequestException as e:
+                print(f"Error retrieving crypto order books: {e}")
+                # Wait before retrying
+                stop_event.wait(interval)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                break
+    
+    # Create and start the thread
+    fetch_thread = threading.Thread(target=fetch_orderbooks, daemon=True)
+    fetch_thread.start()
+    
+    # Return the stop event to allow external control
+    return stop_event
+
 def main():
     """
     Demonstrate persistent bar fetching
