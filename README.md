@@ -209,11 +209,88 @@ except KeyboardInterrupt:
     stop_event.set()
 ```
 
+### 6. Quantitative Trading Strategy
+
+#### Command Line Usage
+```bash
+# Run the quantitative trading strategy with default settings
+python -m src.strategies.crypto_quant_strategy
+
+# Specify custom symbols
+python -m src.strategies.crypto_quant_strategy --symbols BTC/USD ETH/USD
+
+# Customize bar and order book update intervals
+python -m src.strategies.crypto_quant_strategy --bar_interval 2 --orderbook_interval 3
+
+# Set custom risk management parameters
+python -m src.strategies.crypto_quant_strategy \
+    --risk_tolerance 0.03 \
+    --take_profit_ratio 0.06 \
+    --stop_loss_ratio 0.04
+```
+
+#### Strategy Parameters
+- `--symbols`: Crypto symbols to trade (default: BTC/USD, ETH/USD)
+- `--bar_interval`: Interval for bar data updates in seconds (default: 1)
+- `--orderbook_interval`: Interval for order book updates in seconds (default: 1)
+- `--risk_tolerance`: Maximum portfolio risk per trade (default: 0.02)
+- `--take_profit_ratio`: Take profit percentage (default: 0.05)
+- `--stop_loss_ratio`: Stop loss percentage (default: 0.03)
+
+#### Strategy Overview
+The `CryptoQuantitativeStrategy` is a sophisticated, multi-factor trading strategy that combines:
+- Real-time price bar analysis
+- Order book dynamics
+- Volatility tracking
+- Moving average crossover signals
+
+#### Key Features
+- Dynamic signal generation
+- Multi-factor decision making
+- Real-time data processing
+- Configurable risk management
+- Adaptive to market conditions
+
+#### Python Usage
+```python
+from src.strategies.crypto_quant_strategy import CryptoQuantitativeStrategy
+
+# Initialize strategy with custom parameters
+strategy = CryptoQuantitativeStrategy(
+    symbols=['BTC/USD', 'ETH/USD'],  # Symbols to trade
+    bar_interval=1,                  # Bar update interval
+    orderbook_interval=1,            # Order book update interval
+    risk_tolerance=0.02,             # Maximum portfolio risk
+    take_profit_ratio=0.05,          # Take profit percentage
+    stop_loss_ratio=0.03             # Stop loss percentage
+)
+
+# Start the strategy
+try:
+    strategy.start_strategy()
+except KeyboardInterrupt:
+    strategy.stop_strategy()
+```
+
+#### Signal Generation Logic
+The strategy generates signals based on:
+1. Moving Average Crossover
+2. Order Book Imbalance
+3. Price Volatility
+
+Signals include:
+- `BUY`: Strong bullish indicators
+- `SELL`: Strong bearish indicators
+- `HOLD`: Neutral market conditions
+
+Each signal comes with a confidence score and additional market context.
+
 ## Advanced Features
 - Ultra-fast 1-second crypto market data updates
 - Persistent real-time bar data streaming
 - Real-time order book tracking
-- Flexible bar and order book fetching with custom parameters
+- Advanced quantitative trading strategy
+- Flexible bar and order book fetching
 - Configurable fetch intervals
 - Automatic symbol discovery
 - Callback-based data processing
